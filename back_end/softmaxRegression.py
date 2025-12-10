@@ -1,8 +1,13 @@
 from flask import Flask, jsonify, request
-from flask_cors import CORS
+from flask_cors import CORS, cross_origin
+import base64
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, resources={r"/*": {
+    "origins": "*",
+    "methods": ["GET", "POST", "OPTIONS"],
+    "allow_headers": ["Content-Type", "Authorization"]
+}})
 
 #localhost/5000
 @app.route("/", methods=["GET"])
@@ -16,6 +21,32 @@ def home():
 def test():
     name = request.args.get("name", "World")
     return jsonify({"message": f"Hello, {name}"})
+
+
+
+@app.route("/sendImage", methods=["POST", "OPTIONS"])
+@cross_origin()
+def sendImage():
+
+    if request.method == "OPTIONS":
+        return _build_cors_preflight_response()
+
+    data = request.get_json()
+
+    if not data:
+        return jsonify({"error" : "Could not get data"}), 400
+    
+    fileName = data.get('fileName')
+    return jsonify({"message" : f"got it : {fileName}"}), 200
+
+
+def _build_cors_preflight_response():
+    response = jsonify({'message': 'CORS preflight successful'})
+    response.headers.add("Access-Control-Allow-Origin", "*")
+    response.headers.add("Access-Control-Allow-Headers", "Content-Type,Authorization")
+    response.headers.add("Access-Control-Allow-Methods", "POST, OPTIONS")
+    return response
+
 
 
 def not_found(e):
