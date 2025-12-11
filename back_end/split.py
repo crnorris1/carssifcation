@@ -12,6 +12,12 @@ for split_dir in [train_dir, val_dir]:
     if not os.path.exists(split_dir):
         os.makedirs(split_dir)
 
+# Remove existing train/val content (if any) and recreate empty directories
+for split_dir in [train_dir, val_dir]:
+    if os.path.exists(split_dir):
+        shutil.rmtree(split_dir)
+    os.makedirs(split_dir, exist_ok=True)
+
 # Set random seed for reproducibility
 random.seed(42)
 
