@@ -1,13 +1,10 @@
 import torch
 import torch.nn as nn
 import torch.optim as optim
+from PIL import Image
 from torchvision import datasets, transforms, models
 from torch.utils.data import DataLoader
 from torchvision.models import ResNet18_Weights
-import matplotlib.pyplot as plt
-import numpy as np
-import cv2
-import torch.nn.functional as F
 
 # Resize images
 train_transforms = transforms.Compose([
@@ -33,59 +30,77 @@ val_dataset   = datasets.ImageFolder("dataset/val", transform=val_transforms)
 train_loader = DataLoader(train_dataset, batch_size=16, shuffle=True)
 val_loader   = DataLoader(val_dataset, batch_size=16)
 
-# should be 3: sedan, SUV, and truck
-num_classes = len(train_dataset.classes)
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-# Load ResNet18 model
-weights = ResNet18_Weights.DEFAULT
-model = models.resnet18(weights=weights)
+def train(num_epochs=10, weights_path="car_classifier_weights.pth"):
+    print(f"Using device: {device}")
+    num_classes = len(train_dataset.classes)
+    weights = ResNet18_Weights.DEFAULT
+    model = models.resnet18(weights=weights)
+    model.fc = nn.Linear(model.fc.in_features, num_classes)
+    model.to(device)
 
-# Replace the final layer
-model.fc = nn.Linear(model.fc.in_features, num_classes)
+    criterion = nn.CrossEntropyLoss()
+    optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
 
-# move model to GPU if available
-device = "cuda" if torch.cuda.is_available() else "cpu"
-print(f"Using device: {device}")
-model = model.to(device)
+    for epoch in range(num_epochs):
+        model.train()
+        for images, labels in train_loader:
+            images = images.to(device)
+            labels = labels.to(device)
 
-# use CE loss and Adam optimizer
-criterion = nn.CrossEntropyLoss()
-optimizer = optim.Adam(model.parameters(), lr=1e-4)
+            optimizer.zero_grad()
+            outputs = model(images)
+            loss = criterion(outputs, labels)
+            loss.backward()
+            optimizer.step()
 
-num_epochs = 10
+        # optional: validation loop
+        model.eval()
+        correct = 0
+        total = 0
+        with torch.no_grad():
+            for images, labels in val_loader:
+                images = images.to(device)
+                labels = labels.to(device)
+                outputs = model(images)
+                _, preds = torch.max(outputs, 1)
+                correct += (preds == labels).sum().item()
+                total += labels.size(0)
+        acc = correct / total if total > 0 else 0
+        print(f"Epoch {epoch+1}/{num_epochs}, val acc: {acc:.4f}")
 
-# gradient descent loop
-for epoch in range(num_epochs):
-    model.train()
-    running_loss = 0.0
+    torch.save(model.state_dict(), weights_path)
+    print(f"Model saved to {weights_path}")
+    return model
 
-    for images, labels in train_loader:
-        images, labels = images.to(device), labels.to(device)
+def load_model_for_inference(weights_path):
+    num_classes = len(train_dataset.classes)
+    weights = ResNet18_Weights.DEFAULT
+    mdl = models.resnet18(weights=weights)
+    mdl.fc = nn.Linear(mdl.fc.in_features, num_classes)
+    mdl.load_state_dict(torch.load(weights_path, map_location=device))
+    mdl.to(device)
+    mdl.eval()
+    return mdl
 
-        optimizer.zero_grad()
-        outputs = model(images)  # raw logits
-        loss = criterion(outputs, labels)
-        loss.backward()
-        optimizer.step()
+def preprocess_image(image_path):
+    from PIL import Image
+    img = Image.open(image_path).convert("RGB")
+    tensor = val_transforms(img).unsqueeze(0)
+    return tensor.to(device)
 
-        running_loss += loss.item()
+def predict_image(image_path, model, class_names):
+    tensor = preprocess_image(image_path)
+    with torch.no_grad():
+        outputs = model(tensor)
+        _, pred_idx = torch.max(outputs, 1)
+        pred_idx = pred_idx.item()
+    pred_class = class_names[pred_idx]
+    return pred_class, pred_idx
 
-    print(f"Epoch {epoch + 1}/{num_epochs}, Loss: {running_loss / len(train_loader):.4f}")
-
-model.eval()
-correct = 0
-total = 0
-
-# run model on validation set
-with torch.no_grad():
-    for images, labels in val_loader:
-        images, labels = images.to(device), labels.to(device)
-        outputs = model(images)
-        _, preds = torch.max(outputs, 1)
-        correct += (preds == labels).sum().item()
-        total += labels.size(0)
-
-torch.save(model.state_dict(), 'car_classifier_weights.pth')
-print(f"Validation Accuracy: {correct/total:.2%}")
+if __name__ == "__main__":
+    # training happens only when running train_model.py directly
+    train()
 
 
