@@ -1,7 +1,5 @@
 import torch
 import torch.nn as nn
-import torch.optim as optim
-from PIL import Image
 from torchvision import datasets, transforms, models
 from torch.utils.data import DataLoader
 from torchvision.models import ResNet18_Weights
@@ -83,21 +81,6 @@ def load_model_for_inference(weights_path):
     mdl.to(device)
     mdl.eval()
     return mdl
-
-def preprocess_image(image_path):
-    from PIL import Image
-    img = Image.open(image_path).convert("RGB")
-    tensor = val_transforms(img).unsqueeze(0)
-    return tensor.to(device)
-
-def predict_image(image_path, model, class_names):
-    tensor = preprocess_image(image_path)
-    with torch.no_grad():
-        outputs = model(tensor)
-        _, pred_idx = torch.max(outputs, 1)
-        pred_idx = pred_idx.item()
-    pred_class = class_names[pred_idx]
-    return pred_class, pred_idx
 
 if __name__ == "__main__":
     # training happens only when running train_model.py directly
