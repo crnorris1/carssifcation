@@ -1,0 +1,71 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
+
+body{
+    width: 40%;
+    height: 70%;
+    margin: auto;
+    margin-top: 20px;
+    background-color: #1f1f1f;
+}
+
+h1,h2,h3,h4, input{
+    font-family: "Inter";
+    color:aliceblue
+}
+
+input[type="file"] {
+    display: none;
+}
+
+.emphasis{
+    color:rgb(255, 115, 115)
+}
+
+.smallBreak{
+    line-height: 0.8;
+}
+
+.customUpload{
+    font-family: "Inter";
+    color: white;
+    background-color: #1f1f1f;
+    border: 3px solid #414141;
+    border-radius: 10px;
+    display: inline-block;
+    padding: 10px 14px;
+    cursor: pointer;  
+}
+
+button{
+    font-family: "Inter";
+    color: white;
+    background-color: #1f1f1f;
+    font-size:16px;
+    border: 3px solid #414141;
+    border-radius: 10px;
+    display: inline-block;
+    padding: 10px 40px;
+    cursor: pointer;  
+}
+
+button:hover{
+    filter: brightness(85%)
+}
+
+.customUpload:hover{
+    filter: brightness(85%)
+}
+
+
+form, .main{
+    border: 4px solid #414141;
+    border-radius: 5px;
+    padding: 10px;
+    text-align: center;
+}
+
+.output{
+    border: 2px solid aliceblue;
+    width:50%;
+    height: 50%
+}

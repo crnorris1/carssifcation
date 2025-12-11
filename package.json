@@ -1,0 +1,20 @@
+{
+  "name": "full-stack-app-manager",
+  "version": "1.0.0",
+  "description": "Script manager for Python backend and React frontend",
+  "main": "index.js",
+  "scripts": {
+    "backend": "cd back_end && python flask_server.py",
+    "frontend" : "cd front_end && npm start",
+    "dev": "concurrently \"npm run backend\" \"npm run frontend\""
+  },
+  "keywords": [
+    "react",
+    "flask"
+  ],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "npm-run-all": "^4.1.5"
+  }
+}
