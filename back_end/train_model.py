@@ -25,10 +25,25 @@ train_dataset = datasets.ImageFolder("dataset/train", transform=train_transforms
 val_dataset   = datasets.ImageFolder("dataset/val", transform=val_transforms)
 
 # training and validation dataloaders
-train_loader = DataLoader(train_dataset, batch_size=16, shuffle=True)
-val_loader   = DataLoader(val_dataset, batch_size=16)
+train_loader = DataLoader(train_dataset, batch_size=16, num_workers=8, pin_memory=True, shuffle=True)
+val_loader   = DataLoader(val_dataset, batch_size=16, num_workers=8, pin_memory=True)
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+def calc_accuracy(model, data_loader):
+    model.eval()
+    correct = 0
+    total = 0
+    with torch.no_grad():
+        for images, labels in data_loader:
+            images = images.to(device)
+            labels = labels.to(device)
+            outputs = model(images)
+            _, preds = torch.max(outputs, 1)
+            correct += (preds == labels).sum().item()
+            total += labels.size(0)
+    acc = correct / total if total > 0 else 0
+    return acc
 
 def train(num_epochs=10, weights_path="car_classifier_weights.pth"):
     print(f"Using device: {device}")
@@ -38,7 +53,9 @@ def train(num_epochs=10, weights_path="car_classifier_weights.pth"):
     model.fc = nn.Linear(model.fc.in_features, num_classes)
     model.to(device)
 
-    criterion = nn.CrossEntropyLoss()
+    class_counts = torch.tensor([44, 82, 25], dtype=torch.float, device=device)
+    class_weights = 1.0 / class_counts
+    criterion = nn.CrossEntropyLoss(weight=class_weights)
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
 
     for epoch in range(num_epochs):
@@ -52,21 +69,9 @@ def train(num_epochs=10, weights_path="car_classifier_weights.pth"):
             loss = criterion(outputs, labels)
             loss.backward()
             optimizer.step()
+        print(f"Epoch [{epoch+1}/{num_epochs}], Training Accuracy: {calc_accuracy(model, train_loader)*100:.2f}%")
 
-        # optional: validation loop
-        model.eval()
-        correct = 0
-        total = 0
-        with torch.no_grad():
-            for images, labels in val_loader:
-                images = images.to(device)
-                labels = labels.to(device)
-                outputs = model(images)
-                _, preds = torch.max(outputs, 1)
-                correct += (preds == labels).sum().item()
-                total += labels.size(0)
-        acc = correct / total if total > 0 else 0
-        print(f"Epoch {epoch+1}/{num_epochs}, val acc: {acc:.4f}")
+    print(f"Validation Accuracy after training: {calc_accuracy(model, val_loader)*100:.2f}%")
 
     torch.save(model.state_dict(), weights_path)
     print(f"Model saved to {weights_path}")
