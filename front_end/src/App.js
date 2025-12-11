@@ -125,7 +125,7 @@ function App() {
       <h1>Car Classifier</h1>
       <h4>CS4342 Final Project - Cam Norris, Akaash Walker</h4>
       <h3>Upload a picture of a car <i className="emphasis">from the side</i> and find out what type of car it is!</h3>
-      <h3>Categories: (SUV, Sudan, Coupe, Truck, Semi)</h3>
+      <h3>Categories: (SUV, Sedan, Coupe, Truck, Semi)</h3>
       <form>
         <h2>Upload your photo:</h2>
         <label className = "customUpload">
