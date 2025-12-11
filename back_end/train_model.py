@@ -3,6 +3,7 @@ import torch.nn as nn
 from torchvision import datasets, transforms, models
 from torch.utils.data import DataLoader
 from torchvision.models import ResNet18_Weights
+import time
 
 # Resize images
 train_transforms = transforms.Compose([
@@ -29,6 +30,12 @@ train_loader = DataLoader(train_dataset, batch_size=16, num_workers=8, pin_memor
 val_loader   = DataLoader(val_dataset, batch_size=16, num_workers=8, pin_memory=True)
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+def profile_dataloader():
+    start = time.time()
+    for _ in train_loader:
+        pass
+    print("Dataloader only epoch time:", time.time() - start)
 
 def calc_accuracy(model, data_loader):
     model.eval()
@@ -88,7 +95,7 @@ def load_model_for_inference(weights_path):
     return mdl
 
 if __name__ == "__main__":
-    # training happens only when running train_model.py directly
+    profile_dataloader()
     train()
 
 
