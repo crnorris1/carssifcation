@@ -4,7 +4,6 @@ from torchvision import datasets, transforms, models
 from torch.utils.data import DataLoader
 from torchvision.models import ResNet18_Weights
 import time
-from sklearn.decomposition import PCA
 import matplotlib.pyplot as plt
 
 # Resize images
@@ -33,68 +32,6 @@ val_loader   = DataLoader(val_dataset, batch_size=16, num_workers=8, pin_memory=
 
 # set device (cpu or gpu)
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
-# create 3d pca visualization
-def pca_3d_visualization(model, data_loader, num_samples=500):
-    model.eval()
-    all_imgs = []
-    all_preds = []
-    all_labels = []
-
-    with torch.no_grad():
-        for images, labels in data_loader:
-            if len(all_imgs) >= num_samples:
-                break
-
-            batch_size = images.size(0)
-            take = min(num_samples - len(all_imgs), batch_size)
-
-            imgs_batch = images[:take].to(device)
-            labels_batch = labels[:take]
-
-            outputs = model(imgs_batch)
-            _, preds_batch = torch.max(outputs, 1)
-
-            all_imgs.append(imgs_batch.cpu())
-            all_preds.append(preds_batch.cpu())
-            all_labels.append(labels_batch.cpu())
-
-    if not all_imgs:
-        print("No images collected for PCA.")
-        return
-
-    imgs = torch.cat(all_imgs, dim=0)
-    preds = torch.cat(all_preds, dim=0)
-    labels = torch.cat(all_labels, dim=0)
-
-    # Flatten images
-    imgs_flat = imgs.view(imgs.size(0), -1).numpy()
-
-    # 2 components PCA
-    pca = PCA(n_components=2)
-    X_pca = pca.fit_transform(imgs_flat)
-
-    # 3D scatter plot
-    fig = plt.figure(figsize=(8, 6))
-    ax = fig.add_subplot(111, projection="3d")
-
-    scatter = ax.scatter(
-        X_pca[:, 0],  # PCA component 1 -> x-axis (input variation)
-        X_pca[:, 1],  # PCA component 2 -> y-axis
-        labels.numpy(),
-        c=preds.numpy(),
-        cmap="tab10",
-        s=10,
-        alpha=0.7
-    )
-
-    ax.set_xlabel("PCA 1 (input variation)")
-    ax.set_xlabel("PCA 2 (input variation)")
-    ax.set_zlabel("Predicted class")
-    ax.set_title("3D PCA Visualization of Model Predictions")
-
-    plt.tight_layout()
-    plt.show()
 
 # calculate the accuracy given a data set
 def calc_accuracy(model, data_loader):
@@ -158,6 +95,4 @@ def load_model_for_inference(weights_path):
 if __name__ == "__main__":
     train()
     model = load_model_for_inference("car_classifier_weights.pth")
-    pca_3d_visualization(model, val_loader, num_samples=500)
-
 
