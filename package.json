@@ -6,7 +6,8 @@
   "scripts": {
     "backend": "cd back_end && python flask_server.py",
     "frontend" : "cd front_end && npm start",
-    "dev": "concurrently \"npm run backend\" \"npm run frontend\""
+    "dev": "concurrently \"npm run backend\" \"npm run frontend\"",
+    "build": "react-scripts build"
   },
   "keywords": [
     "react",

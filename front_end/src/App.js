@@ -74,7 +74,9 @@ function App() {
             setFetching(true)
 
             //Fetches 5000 server
-            const result = await fetch('http://localhost:5000/sendImage', {
+            //Replace with the following to run locally:
+            //const result = await fetch('http://localhost:5000/sendImage', {
+            const result = await fetch('https://car-classifier-backend.onrender.com/sendImage', {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json' 
@@ -125,7 +127,7 @@ function App() {
       <h1>Car Classifier</h1>
       <h4>CS4342 Final Project - Cam Norris, Akaash Walker</h4>
       <h3>Upload a picture of a car <i className="emphasis">from the side</i> and find out what type of car it is!</h3>
-      <h3>Categories: (SUV, Sedan, Coupe, Truck, Semi)</h3>
+      <h3>Categories: (SUV, Sedan, Truck)</h3>
       <form>
         <h2>Upload your photo:</h2>
         <label className = "customUpload">
