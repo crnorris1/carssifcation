@@ -74,8 +74,9 @@ function App() {
             setFetching(true)
 
             //Fetches 5000 server
-            //                          https://localhost:5000
-            const result = await fetch('https://car-classifier-backend.onrender.com/', {
+            //                          http://localhost:5000/sendImage
+            const result = await fetch('https://car-classifier-backend.onrender.com/sendImage', {
+            //const result = await fetch ('http://localhost:5000/sendImage', {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json' 
