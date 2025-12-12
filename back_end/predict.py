@@ -10,7 +10,7 @@ def predict(raw_img_bytes: bytes) -> str:
     img = Image.open(io.BytesIO(raw_img_bytes)).convert("RGB")
 
     # 2. Preprocess using the same validation transforms
-    tensor = val_transforms(img).unsqueeze(0)  # shape: [1, 3, 224, 224]
+    tensor = val_transforms(img).unsqueeze(0)
 
     # 3. Load model for inference
     inference_model = load_model_for_inference("car_classifier_weights.pth")
