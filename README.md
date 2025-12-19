@@ -1,5 +1,7 @@
 # Vehicle Classification with PyTorch
 
+![A demo gif of the website](car_classifier_demo.gif)
+
 [**Hosted on Render!**](https://car-classifier-frontend.onrender.com/)
 
 **NOTE:** Since we are using the free version of render, the backend may not load in time for the first request. If an upload fails, refresh and page and try again. 
